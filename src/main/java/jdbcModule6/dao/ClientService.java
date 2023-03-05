@@ -72,19 +72,26 @@ public class ClientService {
     }
 
     public void setName(long id, String name) {
-        try(Connection connection = ConnectionManager.open()) {
-            final Client clientById = getById(id).get();
-            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL);
-            preparedStatement.setString(1,name);
-            preparedStatement.setLong(2,clientById.getId());
-
-            preparedStatement.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new DaoException(e);
+        if (name == null || name.length() < 3 || name.length() > 30) {
+            throw new IllegalArgumentException("Invalid name: " + name);
         }
+            try(Connection connection = ConnectionManager.open()) {
+                final Client clientById = getById(id).get();
+                PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL);
+                preparedStatement.setString(1,name);
+                preparedStatement.setLong(2,clientById.getId());
+
+                preparedStatement.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new DaoException(e);
+            }
+
     }
     public void update(Client client) {
+        if (client.getName() == null || client.getName().length() < 3 || client.getName().length() > 30) {
+            throw new IllegalArgumentException("Invalid name: " + client.getName());
+        }
         try(Connection connection = ConnectionManager.open()) {
             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL);
             preparedStatement.setString(1,client.getName());
@@ -97,6 +104,9 @@ public class ClientService {
         }
     }
     public long create(String name) {
+        if (name == null || name.length() < 3 || name.length() > 30) {
+            throw new IllegalArgumentException("Invalid name: " + name);
+        }
         try(Connection connection = ConnectionManager.open()) {
             PreparedStatement preparedStatement = connection.prepareStatement(CREATE_SQL, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1,name);
